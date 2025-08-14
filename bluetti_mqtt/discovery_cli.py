@@ -5,7 +5,6 @@ import base64
 from bleak import BleakError, BleakScanner
 from io import TextIOWrapper
 import json
-import sys
 import textwrap
 import time
 from typing import cast

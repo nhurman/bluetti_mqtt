@@ -88,7 +88,6 @@ async def log(address: str, encrypted: bool, path: str, interval: int = 1):
             await asyncio.sleep(interval)
 
 
-
 def main():
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawDescriptionHelpFormatter,

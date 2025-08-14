@@ -2,7 +2,7 @@ from typing import List
 from ..commands import ReadHoldingRegisters
 from .bluetti_device import BluettiDevice
 from .struct import DeviceStruct
-from enum import Enum, unique
+from enum import Enum, Flag, unique
 
 
 @unique
@@ -16,8 +16,8 @@ class ProtocolAddress(Enum):
     INV_LOAD_INFO = 1400
     INV_INVERTER_INFO = 1500
     INV_BASE_SETTINGS_INFO = 2000
-    AC_SWITCH = 2011 # Writable, 1 = on, 0 = off
-    DC_SWITCH = 2012 # Writable, 1 = on, 0 = off
+    AC_SWITCH = 2011  # Writable, 1 = on, 0 = off
+    DC_SWITCH = 2012  # Writable, 1 = on, 0 = off
     INV_ADVANCED_SETTINGS_INFO = 2200
     CERT_SETTINGS_INFO = 2400
     MICRO_INV_ADV_SETTINGS = 2500
@@ -27,8 +27,8 @@ class ProtocolAddress(Enum):
     TIME_CTRL_INFO = 5000
     PACK_MAIN_INFO = 6000
     PACK_ITEM_INFO = 6100
-    PACK_SUB_PACK_INFO = 6300 # PACK_CELLS_INFO_SPLIT_START
-    PACK_SETTING = 7000       # PACK_CELLS_INFO_SPLIT_END
+    PACK_SUB_PACK_INFO = 6300  # PACK_CELLS_INFO_SPLIT_START
+    PACK_SETTING = 7000        # PACK_CELLS_INFO_SPLIT_END
     PACK_BMU_INFO = 7200
     IOT_BASE_INFO = 11000
     IOT_SETTINGS_INFO = 12002
@@ -47,18 +47,19 @@ class ProtocolAddress(Enum):
     NODE_INFO = 21000
     COMM_DATA_OTHER = 40000
 
+
 @unique
-class CtrlStatusMask(Enum):
-    POWER_ENABLE       = 1 << 0
-    AC_ENABLE          = 1 << 1
-    DC_ENABLE          = 1 << 2
-    INV_ENABLE         = 1 << 3
-    GRID_ENABLE        = 1 << 4
-    PV_ENABLE          = 1 << 5
-    FEEDBACK_ENABLE    = 1 << 6
-    METER_ENABLE       = 1 << 7
-    LED_ENABLE         = 1 << 8
-    ECO_ENABLE         = 1 << 9
+class CtrlStatusMask(Flag):
+    POWER_ENABLE = 1 << 0
+    AC_ENABLE = 1 << 1
+    DC_ENABLE = 1 << 2
+    INV_ENABLE = 1 << 3
+    GRID_ENABLE = 1 << 4
+    PV_ENABLE = 1 << 5
+    FEEDBACK_ENABLE = 1 << 6
+    METER_ENABLE = 1 << 7
+    LED_ENABLE = 1 << 8
+    ECO_ENABLE = 1 << 9
     SUPER_POWER_ENABLE = 1 << 10
 
 
@@ -68,17 +69,18 @@ class ChargingMode(Enum):
     SILENT = 1
     TURBO = 2
 
+
 class V2Device(BluettiDevice):
     def __init__(self, address: str, sn: str, type: str):
         super().__init__(address, type, sn)
         self.struct = DeviceStruct(chunk_size=1)
 
-        ## Setters
+        # Setters
         # See ctrl_status to read the current value of these two (it's a bitfield)
         self.struct.add_bool_field("ac_switch", ProtocolAddress.AC_SWITCH.value)
         self.struct.add_bool_field("dc_switch", ProtocolAddress.DC_SWITCH.value)
 
-        ## BaseConfig
+        # BaseConfig
         self.struct.add_uint8_field("cfg_specs", ProtocolAddress.BASE_CONFIG.value + 0)
         self.struct.add_uint8_field("cfg_voltage_type", ProtocolAddress.BASE_CONFIG.value + 1)
         self.struct.add_uint_field("cfg_guest_mode_enabled", ProtocolAddress.BASE_CONFIG.value + 2)
@@ -87,7 +89,7 @@ class V2Device(BluettiDevice):
         self.struct.add_uint_field("cfg_modbus_version", ProtocolAddress.BASE_CONFIG.value + 28)
         self.struct.add_uint_field("cfg_protocol_version", ProtocolAddress.BASE_CONFIG.value + 30)
 
-        ## HomeData
+        # HomeData
         self.struct.add_decimal_field("pack_voltage", ProtocolAddress.HOME_DATA.value + 0, 2)
         self.struct.add_decimal_field("pack_current", ProtocolAddress.HOME_DATA.value + 2, 1)
         self.struct.add_uint_field("pack_soc", ProtocolAddress.HOME_DATA.value + 4)
@@ -144,7 +146,7 @@ class V2Device(BluettiDevice):
         self.struct.add_uint_field("rate_voltage", ProtocolAddress.HOME_DATA.value + 138)
         self.struct.add_uint_field("rate_frequency", ProtocolAddress.HOME_DATA.value + 140)
 
-        ## Inverter GridInfo
+        # Inverter GridInfo
         self.struct.add_decimal_field("grid_frequency", ProtocolAddress.INV_GRID_INFO.value + 0, 1)
         self.struct.add_uint32_field("total_grid_power", ProtocolAddress.INV_GRID_INFO.value + 2)
         self.struct.add_decimal32_field("grid_total_chg_energy", ProtocolAddress.INV_GRID_INFO.value + 6, 1)
@@ -154,7 +156,7 @@ class V2Device(BluettiDevice):
         self.struct.add_decimal_field("grid_phase0_voltage", ProtocolAddress.INV_GRID_INFO.value + 28, 1)
         self.struct.add_decimal_field("grid_phase0_current", ProtocolAddress.INV_GRID_INFO.value + 30, 1)
 
-        ## Inverter LoadInfo
+        # Inverter LoadInfo
         self.struct.add_uint32_field("total_dc_power", ProtocolAddress.INV_LOAD_INFO.value + 0)
         self.struct.add_decimal32_field("total_dc_energy", ProtocolAddress.INV_LOAD_INFO.value + 4, 1)
         self.struct.add_uint_field("dc_5v_power", ProtocolAddress.INV_LOAD_INFO.value + 8)
@@ -171,15 +173,15 @@ class V2Device(BluettiDevice):
         self.struct.add_decimal_field("inv_phase0_voltage", ProtocolAddress.INV_LOAD_INFO.value + 62, 1)
         self.struct.add_decimal_field("inv_phase0_current", ProtocolAddress.INV_LOAD_INFO.value + 64, 1)
 
-        ## Pack info
+        # Pack info
         self.struct.add_uint_field("pack_volt_type", ProtocolAddress.PACK_MAIN_INFO.value + 0)
         self.struct.add_uint8_field("pack_cnts", ProtocolAddress.PACK_MAIN_INFO.value + 3)
         self.struct.add_decimal_field("pack_voltage", ProtocolAddress.PACK_MAIN_INFO.value + 6, 2)
         self.struct.add_decimal_field("pack_current", ProtocolAddress.PACK_MAIN_INFO.value + 8, 1)
         self.struct.add_uint8_field("pack_soc", ProtocolAddress.PACK_MAIN_INFO.value + 11)
         self.struct.add_uint8_field("pack_soh", ProtocolAddress.PACK_MAIN_INFO.value + 13)
-        # Fahrenheit?
-        self.struct.add_uint_field("pack_avg_temp", ProtocolAddress.PACK_MAIN_INFO.value + 14)
+        # Celsius + 40?
+        self.struct.add_uint_field("pack_avg_temp", ProtocolAddress.PACK_MAIN_INFO.value + 14, offset=-40)
         self.struct.add_uint8_field("pack_running_status", ProtocolAddress.PACK_MAIN_INFO.value + 17)
         # 1 charging, 2 discharging
         self.struct.add_uint8_field("pack_charging_status", ProtocolAddress.PACK_MAIN_INFO.value + 19)
@@ -235,7 +237,6 @@ class V2Device(BluettiDevice):
         for field in self.struct.fields:
             if (new_name := mqtt_name_map.get(field.name)) is not None:
                 field.name = new_name
-
 
     @property
     def polling_commands(self) -> List[ReadHoldingRegisters]:

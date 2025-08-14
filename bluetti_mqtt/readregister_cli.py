@@ -24,9 +24,9 @@ async def read_address(client, address, size):
     try:
         response = await response_future
         return (response, command.parse_response(response))
-    except ModbusError as e:
+    except ModbusError:
         raise
-    except BaseException as e:
+    except BaseException:
         raise
 
 
@@ -62,7 +62,7 @@ async def main(args):
             for size in range(1, 100):
                 try:
                     raw_data, data = await read_address(client, address, size)
-                except BaseException as e:
+                except BaseException:
                     break
 
         if data is None:

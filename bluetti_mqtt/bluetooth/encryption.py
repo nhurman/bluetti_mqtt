@@ -82,7 +82,11 @@ class ECDHUtils(Enum):
 
 class SignatureCrypt(Enum):
     PRIVATE_KEY_L1 = "4F19A16E3E87BDD9BD24D3E5495B88041511943CBC8B969ADE9641D0F56AF337"
-    PUBLIC_KEY_K2 = "3059301306072a8648ce3d020106082a8648ce3d03010703420004A73ABF5D2232C8C1C72E68304343C272495E3A8FD6F30EA96DE2F4B3CE60B251EE21AC667CF8A71E18B46B664EAEFFE3C489F24F695B6411DB7E22CCC85A8594"
+    PUBLIC_KEY_K2 = '''
+        3059301306072a8648ce3d020106082a8648ce3d03010703420004A73ABF5D22
+        32C8C1C72E68304343C272495E3A8FD6F30EA96DE2F4B3CE60B251EE21AC667C
+        F8A71E18B46B664EAEFFE3C489F24F695B6411DB7E22CCC85A8594
+    '''
 
 
 class BleConfig(Enum):
@@ -97,7 +101,9 @@ def is_device_using_encryption(manufacturer_data):
     )
 
 
-## Crypto helpers - Most of those are specific to what Bluetti is doing
+#
+# Crypto helpers - Most of those are specific to what Bluetti is doing
+#
 
 
 def aes_decrypt(data, aes_key, iv):
@@ -256,7 +262,9 @@ def verify_and_extract_signed_data(message, signed_data_suffix):
     return data
 
 
-## Protocol
+#
+# Protocol
+#
 
 
 class MessageType(Enum):
@@ -302,7 +310,7 @@ class Message:
 
     @property
     def body(self) -> memoryview:
-        return self.view[len(self.header) : -len(self.checksum)]
+        return self.view[len(self.header):-len(self.checksum)]
 
     @property
     def data(self) -> memoryview:
@@ -483,7 +491,9 @@ class EncryptedConnection(Connection):
         self.ready_event.set()
 
 
-## The encapsulated messages look like this, check out other bluetti libraries for parsing
+#
+# The encapsulated messages look like this, check out other bluetti libraries for parsing
+#
 
 # 01 ?? ?? ?? ........ ?? ??
 # |  |  |     |        |---> Modbus CRC16 (2 bytes)

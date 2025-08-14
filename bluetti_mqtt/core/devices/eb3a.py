@@ -36,15 +36,29 @@ class EB3A(BluettiDevice):
         self.struct.add_uint_field('ac_output_power', 38)
         self.struct.add_uint_field('dc_output_power', 39)
         self.struct.add_uint_field('total_battery_percent', 43)
+        self.struct.add_bool_field('ac_input_present', 45)
+        self.struct.add_bool_field('dc_charger_active', 46)
+        self.struct.add_bool_field('ac_bypass_active', 47)
         self.struct.add_bool_field('ac_output_on', 48)
         self.struct.add_bool_field('dc_output_on', 49)
 
         # Details
-        self.struct.add_decimal_field('ac_input_voltage', 77, 1)
+        self.struct.add_uint_field('ac_output_voltage', 71)
+        self.struct.add_decimal_field('internal_ac_output_current', 72, 1)
+        self.struct.add_uint_field('internal_ac_output_power_one', 73)
+        self.struct.add_uint_field('ac_input_voltage', 77)
+        self.struct.add_decimal_field('internal_ac_input_current', 78, 1)
+        self.struct.add_uint_field('internal_ac_input_power', 79)
         self.struct.add_decimal_field('internal_dc_input_voltage', 86, 2)
+        self.struct.add_uint_field('internal_dc_input_power', 87)
+        self.struct.add_decimal_field('internal_dc_input_current', 88, 2)
 
         # Battery Data
         self.struct.add_uint_field('pack_num_max', 91)
+        self.struct.add_decimal_field('pack_battery_voltage', 92, 2)
+        self.struct.add_decimal_field('pack_battery_current', 93, 2)
+        self.struct.add_uint_field('pack_battery_percent', 94)
+        self.struct.add_uint_field('pack_temperature_c', 95, offset=-40)
 
         # Controls
         self.struct.add_bool_field('ac_output_on', 3007)

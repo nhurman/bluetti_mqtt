@@ -58,7 +58,7 @@ class EP500P(BluettiDevice):
         self.struct.add_enum_field('ac_output_mode', 70, OutputMode)
         self.struct.add_decimal_field('internal_ac_voltage', 71, 1)
         self.struct.add_decimal_field('internal_current_one', 72, 1)
-        self.struct.add_uint_field('internal_power_one', 73)
+        self.struct.add_int_field('internal_power_one', 73)
         self.struct.add_decimal_field('internal_ac_frequency', 74, 2)
         self.struct.add_decimal_field('internal_current_two', 75, 1)
         self.struct.add_uint_field('internal_power_two', 76)

@@ -113,8 +113,13 @@ def aes_decrypt(data, aes_key, iv):
     else:
         encrypted = memoryview(data[2:])
 
+
+    if data_len > len(encrypted):
+        logging.debug(f"aes_decrypt: incomplete packet wanted {data_len} have {len(encrypted)}")
+        return bytes(0)
+
     if len(encrypted) % AES_BLOCK_SIZE != 0:
-        raise ValueError("Data not aligned on aes block size")
+        raise ValueError(f"Data not aligned on aes block size {AES_BLOCK_SIZE}, data size {len(encrypted)}, decryped_data_len={data_len}")
 
     cipher = Cipher(algorithms.AES(aes_key), modes.CBC(iv))
     decryptor = cipher.decryptor()
@@ -383,8 +388,18 @@ class EncryptedConnection(Connection):
     # The signing key for the key exchange is well-known
     peer_pubkey: bytes | None = None
 
+    buffer_begin: bytes | None = None
+
+
     async def on_packet(self, buffer: bytearray) -> None:
-        message = Message(buffer)
+        if self.buffer_begin is None:
+            self.buffer_begin = bytes(0)
+        if len(self.buffer_begin) > 0:
+            logging.debug(f"on_packet: {len(self.buffer_begin)} from previos packet")
+            message = Message(self.buffer_begin + buffer)
+            self.buffer_begin = bytes(0)
+        else:
+            message = Message(buffer)
         if message.is_pre_key_exchange:
             message.verify_checksum()
             if message.type == MessageType.CHALLENGE:
@@ -402,7 +417,11 @@ class EncryptedConnection(Connection):
             if self.secure_aes_key is None
             else (self.secure_aes_key, None)
         )
-        decrypted = Message(aes_decrypt(message.buffer, key, iv))
+        decrypted_buf = aes_decrypt(message.buffer, key, iv)
+        if len(decrypted_buf) <= 0:
+                self.buffer_begin = message.buffer
+
+        decrypted = Message(decrypted_buf)
 
         if decrypted.is_pre_key_exchange:
             decrypted.verify_checksum()

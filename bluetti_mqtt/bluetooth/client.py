@@ -102,7 +102,8 @@ class BluetoothClient:
             logging.info(f'Device {self.address} has name: {self.name}')
         except BleakError:
             logging.exception(f'Error retrieving device name {self.address}:')
-            self.state = ClientState.DISCONNECTING
+            #self.state = ClientState.DISCONNECTING
+            self.name = 'unknown-name'
 
     async def _start_listening(self):
         """Register for command response notifications"""

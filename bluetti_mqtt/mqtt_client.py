@@ -118,12 +118,41 @@ NORMAL_DEVICE_FIELDS = {
             'device_class': 'outlet',
         }
     ),
+    'charging_mode': MqttFieldConfig(
+        type=MqttFieldType.ENUM,
+        setter=True,
+        advanced=False,
+        home_assistant_extra={
+            'name': 'Silent Charging Mode',
+        }
+    ),
     'ac_output_mode': MqttFieldConfig(
         type=MqttFieldType.ENUM,
         setter=False,
         advanced=True,
         home_assistant_extra={
             'name': 'AC Output Mode',
+        }
+    ),
+    'grid_max_input_current': MqttFieldConfig(
+        type=MqttFieldType.NUMERIC,
+        setter=True,
+        advanced=True,
+        home_assistant_extra={
+            'name': 'Maximum Grid Input Current',
+            'unit_of_measurement': 'A',
+            'device_class': 'amps',
+            'state_class': 'measurement',
+            'force_update': True,
+        }
+    ),
+    'grid_self_adaptation_mode': MqttFieldConfig(
+        type=MqttFieldType.BOOL,
+        setter=True,
+        advanced=False,
+        home_assistant_extra={
+            'name': 'Grid Self-Adaptation Mode',
+            'device_class': 'switch',
         }
     ),
     'internal_ac_voltage': MqttFieldConfig(
@@ -514,7 +543,8 @@ class MQTTClient:
                     hostname=self.hostname,
                     port=self.port,
                     username=self.username,
-                    password=self.password
+                    password=self.password,
+                    message_retry_set=3
                 ) as client:
                     logging.info('Connected to MQTT broker')
 
